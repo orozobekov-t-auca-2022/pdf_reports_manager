@@ -6,7 +6,7 @@ export interface FileCreationAttributes {
   filePath: string;
   mimeType: string;
   fileSize: number;
-  folderId: number;
+  folderId: number | null;
 }
 
 @Table({
@@ -60,10 +60,10 @@ export class File extends Model<File, FileCreationAttributes> {
   @ForeignKey(() => Folder)
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: true,
     field: 'folder_id',
   })
-  folderId: number;
+  folderId: number | null;
 
   @BelongsTo(() => Folder)
   folder: Folder;

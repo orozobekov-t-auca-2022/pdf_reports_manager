@@ -99,3 +99,11 @@
     background-color: #cccccc;
     cursor: not-allowed;
 }
+
+.error {
+    color: #e74c3c;
+    font-size: 0.875rem;
+    margin-top: 5px;
+    margin-bottom: 0;
+    font-weight: 500;
+}

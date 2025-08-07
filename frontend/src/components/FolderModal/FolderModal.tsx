@@ -3,32 +3,62 @@ import styles from './FolderModal.module.css';
 
 interface FolderModalProps {
     onClose: () => void;
-    onCreate: (folderName: string) => void;
+    onCreate: (folderName: string) => Promise<void>;
 }
 
 function FolderModal({ onClose, onCreate }: FolderModalProps) {
     const [folderName, setFolderName] = useState('');
+    const [error, setError] = useState<string | null>(null);
+    const [isCreating, setIsCreating] = useState(false);
+
+    const isValid = folderName.trim().length >= 2 && folderName.trim().length <= 30 && !/[<>:"/\\|?*]/.test(folderName.trim());
 
     const handleCreate = async () => {
-        if (folderName.trim()) {
-            try {
-                const response = await fetch('http://localhost:5000/api/folders', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ name: folderName.trim() }),
-                });
+        const trimmedName = folderName.trim();
+        if (!trimmedName) {
+            setError('Имя папки не может быть пустым');
+            return;
+        }
 
-                if (response.ok) {
-                    onCreate(folderName.trim());
-                    setFolderName('');
-                } else {
-                    console.error('Failed to create folder');
-                }
-            } catch (error) {
-                console.error('Error creating folder:', error);
-            }
+        if (trimmedName.length < 1) {
+            setError('Имя папки должно содержать минимум 1 символ');
+            return;
+        }
+
+        if (trimmedName.length > 30) {
+            setError('Имя папки не должно превышать 30 символов');
+            return;
+        }
+
+        // Проверка на недопустимые символы
+        const invalidChars = /[<>:"/\\|?*]/;
+        if (invalidChars.test(trimmedName)) {
+            setError('Имя папки содержит недопустимые символы');
+            return;
+        }
+
+        setIsCreating(true);
+        setError(null);
+        
+        try {
+            await onCreate(trimmedName);
+            setFolderName('');
+        } catch (error: unknown) {
+            console.error('Error creating folder:', error);
+            setError(error instanceof Error ? error.message : 'Ошибка при создании папки');
+        } finally {
+            setIsCreating(false);
+        }
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setFolderName(value);
+        
+        if (value.trim().length === 0) {
+            setError('Имя папки не может быть пустым');
+        } else {
+            setError(null);
         }
     };
 
@@ -58,10 +88,12 @@ function FolderModal({ onClose, onCreate }: FolderModalProps) {
                         type="text" 
                         className={styles.input}
                         value={folderName}
-                        onChange={(e) => setFolderName(e.target.value)}
+                        onChange={handleInputChange}
                         placeholder="Введите имя папки"
                         autoFocus
+                        
                     />
+                    {error && <p className={styles.error}>{error}</p>}
                 </div>
 
                 <div className={styles.buttonGroup}>
@@ -77,10 +109,10 @@ function FolderModal({ onClose, onCreate }: FolderModalProps) {
                             e.preventDefault();
                             handleCreate();
                         }}
-                        disabled={!folderName.trim()}
+                        disabled={!isValid || isCreating}
                         type='submit'
                     >
-                        Создать
+                        {isCreating ? 'Создается...' : 'Создать'}
                     </button>
                 </div>
             </form>

@@ -5,23 +5,33 @@ import styles from "./Sidebar.module.css";
 import type { Folder, File, ApiResponse } from "../../types";
 import { groupFilesByDate, getSortedDateKeys } from "../../utils/dateUtils";
 
-function Sidebar(){
+interface SidebarProps {
+    onFolderSelect?: (folderId: number | undefined) => void;
+    onFileSelect?: (fileId: number | undefined) => void;
+    refreshTrigger?: number;
+}
+
+function Sidebar({ onFolderSelect, onFileSelect, refreshTrigger }: SidebarProps = { onFolderSelect: undefined, onFileSelect: undefined, refreshTrigger: undefined }){
     const [activeButton, setActiveButton] = useState<string>('date');
     const [folders, setFolders] = useState<Folder[]>([]);
     const [files, setFiles] = useState<File[]>([]);
-    const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
+    const [selectedFolderId, setSelectedFolderId] = useState<number | undefined>(undefined);
 
     useEffect(() => {
+        console.log('Sidebar: useEffect triggered, refreshTrigger =', refreshTrigger);
         fetch('http://localhost:5000/api/folders')
             .then(res => res.json())
-            .then((data: ApiResponse<Folder[]>) => setFolders(data.data))
+            .then((data: ApiResponse<Folder[]>) => {
+                console.log('Sidebar: Fetched folders:', data.data);
+                setFolders(data.data);
+            })
             .catch(err => console.error('Error fetching folders:', err));
 
         fetch('http://localhost:5000/api/files/dates')
             .then(res => res.json())
             .then((data: ApiResponse<File[]>) => setFiles(data.data))
             .catch(err => console.error('Error fetching files:', err));
-    }, [])
+    }, [refreshTrigger])
 
     const sortedContent = useMemo(() => {
         if (activeButton === 'date') {
@@ -42,9 +52,13 @@ function Sidebar(){
         setActiveButton(buttonType);
     };
 
-    function createFile(folder: Folder) {
-        setIsFolderModalOpen(true);
-    }
+    const handleFolderSelect = (folder: Folder) => {
+        const newSelectedId = selectedFolderId === folder.id ? undefined : folder.id;
+        setSelectedFolderId(newSelectedId);
+        if (onFolderSelect) {
+            onFolderSelect(newSelectedId);
+        }
+    };
 
     return(
         <div className={styles.sidebar}>
@@ -75,13 +89,20 @@ function Sidebar(){
                                 <DateGroup 
                                     key={date} 
                                     date={date} 
-                                    files={groupedFiles[date]} 
+                                    files={groupedFiles[date]}
+                                    onFileClick={onFileSelect}
                                 />
                             ));
                         })()
                     ) : (
                         (sortedContent.data as Folder[]).map(folder => (
-                            <SidebarListItem key={folder.id} folder={folder} onClick={() => createFile(folder)}/>
+                            <SidebarListItem 
+                                key={folder.id} 
+                                folder={folder} 
+                                onClick={handleFolderSelect}
+                                isSelected={selectedFolderId === folder.id}
+                                onFileClick={onFileSelect}
+                            />
                         ))
                     )}                            
                 </ul>

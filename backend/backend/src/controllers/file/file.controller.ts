@@ -11,13 +11,14 @@ export class FileController {
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
-    @Query('folderId', ParseIntPipe) folderId: number,
+    @Query('folderId') folderIdParam?: string,
   ) {
     try {
       if (!file) {
         throw new HttpException('No file uploaded', HttpStatus.BAD_REQUEST);
       }
 
+      const folderId = folderIdParam ? parseInt(folderIdParam, 10) : null;
       const savedFile = await this.fileService.uploadFile(file, folderId);
       return {
         success: true,
@@ -134,6 +135,30 @@ export class FileController {
           message: error.message,
         },
         HttpStatus.NOT_FOUND,
+      );
+    }
+  }
+
+  @Get(':id/view')
+  async viewFile(@Param('id', ParseIntPipe) id: number, @Response() res: ExpressResponse) {
+    try {
+      const file = await this.fileService.getFileById(id);
+      
+      if (!file) {
+        throw new HttpException('File not found', HttpStatus.NOT_FOUND);
+      }
+
+      res.setHeader('Content-Type', file.mimeType);
+      res.setHeader('Content-Disposition', `inline; filename="${file.name}"`);
+      
+      return res.sendFile(file.filePath, { root: '.' });
+    } catch (error) {
+      throw new HttpException(
+        {
+          success: false,
+          message: error.message,
+        },
+        HttpStatus.BAD_REQUEST,
       );
     }
   }

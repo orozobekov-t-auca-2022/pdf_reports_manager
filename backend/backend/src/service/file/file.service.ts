@@ -16,10 +16,13 @@ export class FileService {
     private folderModel: typeof Folder,
   ) {}
 
-  async uploadFile(file: Express.Multer.File, folderId: number): Promise<File> {
-    const folder = await this.folderModel.findByPk(folderId);
-    if (!folder) {
-      throw new Error(`Folder with ID ${folderId} not found`);
+  async uploadFile(file: Express.Multer.File, folderId: number | null): Promise<File> {
+    // Проверяем папку только если folderId передан
+    if (folderId !== null) {
+      const folder = await this.folderModel.findByPk(folderId);
+      if (!folder) {
+        throw new Error(`Folder with ID ${folderId} not found`);
+      }
     }
 
     // Создаем директорию uploads если её нет

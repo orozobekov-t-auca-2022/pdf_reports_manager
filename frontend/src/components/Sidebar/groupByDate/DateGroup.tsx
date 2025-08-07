@@ -5,9 +5,10 @@ import FileListItem from './FileListItem';
 interface DateGroupProps {
     date: string;
     files: File[];
+    onFileClick?: (fileId: number) => void;
 }
 
-function DateGroup({ date, files }: DateGroupProps) {
+function DateGroup({ date, files, onFileClick }: DateGroupProps) {
     return (
         <div className={styles.dateGroup}>
             <div className={styles.headerBlock}>
@@ -15,7 +16,7 @@ function DateGroup({ date, files }: DateGroupProps) {
             </div>
             <div className={styles.filesList}>
                 {files.map(file => (
-                    <FileListItem key={file.id} file={file} />
+                    <FileListItem key={file.id} file={file} onFileClick={onFileClick} />
                 ))}
             </div>
         </div>

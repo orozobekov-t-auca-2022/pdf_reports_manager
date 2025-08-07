@@ -1,39 +1,86 @@
 import { useState } from 'react';
-import styles from './FolderModal.module.css';
+import styles from './FileModal.module.css';
 
 interface FileModalProps {
     onClose: () => void;
-    onCreate: (folderName: string) => void;
+    onUpload: (file: File, folderId?: number) => void;
+    folderId?: number;
 }
 
-function FileModal({ onClose, onCreate }: FileModalProps) {
-    const [folderName, setFolderName] = useState('');
+function FileModal({ onClose, onUpload, folderId }: FileModalProps) {
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const handleCreate = async () => {
-        if (folderName.trim()) {
-            try {
-                const response = await fetch('http://localhost:5000/api/folders', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ name: folderName.trim() }),
-                });
+    const validateFile = (file: File): string | null => {
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+            return 'Размер файла не должен превышать 10MB';
+        }
+        return null;
+    };
 
-                if (response.ok) {
-                    onCreate(folderName.trim());
-                    setFolderName('');
-                } else {
-                    console.error('Failed to create folder');
-                }
-            } catch (error) {
-                console.error('Error creating folder:', error);
+    const isValid = selectedFile !== null && error === null;
+
+    const handleUpload = async () => {
+        if (!selectedFile || !isValid) {
+            setError('Выберите корректный файл');
+            return;
+        }
+
+        setIsUploading(true);
+        setError(null);
+        try {
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            
+            let uploadUrl = 'http://localhost:5000/api/files/upload';
+            if (folderId) {
+                uploadUrl += `?folderId=${folderId}`;
             }
+
+            const response = await fetch(uploadUrl, {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                onUpload(selectedFile, folderId);
+                setSelectedFile(null);
+                setError(null);
+                onClose();
+            } else {
+                const errorData = await response.json();
+                console.error('Failed to upload file:', errorData);
+                setError(`Ошибка загрузки: ${errorData.message || 'Unknown error'}`);
+            }
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            setError('Ошибка при загрузке файла');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const validationError = validateFile(file);
+            if (validationError) {
+                setError(validationError);
+                setSelectedFile(null);
+            } else {
+                setSelectedFile(file);
+                setError(null);
+            }
+        } else {
+            setSelectedFile(null);
+            setError(null);
         }
     };
 
     const handleCancel = () => {
-        setFolderName('');
+        setSelectedFile(null);
         onClose();
     };
 
@@ -44,30 +91,35 @@ function FileModal({ onClose, onCreate }: FileModalProps) {
                 onClick={(e) => e.stopPropagation()} 
                 onSubmit={(e) => {
                     e.preventDefault();
-                    handleCreate();
+                    handleUpload();
                 }}
             >
-                <h3 className={styles.modalTitle}>Создать новую папку</h3>
+                <h3 className={styles.modalTitle}>Загрузите файл с расширением PDF</h3>
                 
                 <div className={styles.inputGroup}>
-                    <label className={styles.inputLabel} htmlFor="folderName">
-                        Имя папки
+                    <label className={styles.inputLabel} htmlFor="fileInput">
+                        Выберите PDF файл
                     </label>
                     <input 
-                        id="folderName"
-                        type="text" 
+                        id="fileInput"
+                        type="file"
+                        accept=".pdf,application/pdf"
+                        onChange={handleFileChange}
                         className={styles.input}
-                        value={folderName}
-                        onChange={(e) => setFolderName(e.target.value)}
-                        placeholder="Введите имя папки"
-                        autoFocus
                     />
+                    {selectedFile && (
+                        <p className={styles.fileName}>
+                            Выбран файл: {selectedFile.name}
+                        </p>
+                    )}
+                    {error && <p className={styles.error}>{error}</p>}
                 </div>
 
                 <div className={styles.buttonGroup}>
                     <button 
                         className={`${styles.button} ${styles.cancelButton}`}
                         onClick={handleCancel}
+                        type="button"
                     >
                         Отмена
                     </button>
@@ -75,12 +127,12 @@ function FileModal({ onClose, onCreate }: FileModalProps) {
                         className={`${styles.button} ${styles.createButton}`}
                         onClick={(e) => {
                             e.preventDefault();
-                            handleCreate();
+                            handleUpload();
                         }}
-                        disabled={!folderName.trim()}
+                        disabled={!isValid || isUploading}
                         type='submit'
                     >
-                        Создать
+                        {isUploading ? 'Загружается...' : 'Загрузить'}
                     </button>
                 </div>
             </form>
