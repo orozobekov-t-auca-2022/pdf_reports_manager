@@ -1,0 +1,91 @@
+*{
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.sidebar{
+    width: 200px;
+    height: 100%;
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+}
+.sidebarContainer{
+    width: 150px;
+}
+h3{
+    margin: 15px 0;
+    font-size: 16px;
+    font-weight: 500;
+    width: 100%;
+}
+h4{
+    margin: 10px 0;
+    font-size: 14px;
+    font-weight: 400;
+    width: 100%;
+}
+.filesList{
+    list-style-type: none;
+    padding: 0;
+    width: 100%;
+}
+.filesList li{
+    padding: 0 0 0 10px;
+    font-size: 13px;
+}
+.sortedList {
+    list-style-type: none;
+    padding: 0;
+}
+.sortedList li{
+    padding-top: 0;
+}
+.buttonGroup{
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+.buttonGroup button{
+    width: 60px;
+    height: 30px;
+    border: none;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.buttonGroup button.active{
+    background-color: grey;
+    color: white;
+}
+
+.folderHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.date {
+    font-size: 11px;
+    color: #666;
+    font-weight: 300;
+}
+
+.filesList li {
+    padding: 5px 0 5px 10px;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.fileDate {
+    font-size: 10px;
+    color: #999;
+    margin-left: 5px;
+}
+

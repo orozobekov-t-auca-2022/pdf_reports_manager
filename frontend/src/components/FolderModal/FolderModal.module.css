@@ -1,0 +1,101 @@
+.modalContainer{
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.folderModal{
+    background-color: white;
+    border-radius: 8px;
+    padding: 24px;
+    width: 320px;
+    min-height: 180px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.modalTitle {
+    font-size: 18px;
+    font-weight: 500;
+    color: #333;
+    margin: 0;
+    text-align: center;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.inputLabel {
+    font-size: 14px;
+    font-weight: 400;
+    color: #555;
+    margin: 0;
+}
+
+.input {
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: 'Roboto', sans-serif;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.buttonGroup {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Roboto', sans-serif;
+}
+
+.cancelButton {
+    background-color: #6c757d;
+    color: white;
+}
+
+.cancelButton:hover {
+    background-color: #5a6268;
+}
+
+.createButton {
+    background-color: #007bff;
+    color: white;
+}
+
+.createButton:hover {
+    background-color: #0056b3;
+}
+
+.createButton:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}

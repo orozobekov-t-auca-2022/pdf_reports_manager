@@ -1,0 +1,24 @@
+.dateGroup {
+    margin-bottom: 15px;
+}
+
+.dateHeader {
+    font-size: 14px;
+    font-weight: 400;
+    color: #333;
+    margin: 10px 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.filesList {
+    list-style-type: none;
+    padding: 0;
+    width: 100%;
+}
+
+.filesList > * {
+    margin-bottom: 0;
+}
